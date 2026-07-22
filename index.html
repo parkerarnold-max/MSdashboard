@@ -573,7 +573,10 @@
         const CALENDAR_ID = 'c_6883b301bc1ad69adb31c9bb57a3cd9c883d2b0920f1ba47cbc4429fb978aa73@group.calendar.google.com'; 
         const API_KEY = 'AIzaSyCMOTc1u9L9b_blW9vZkzNXrneKiJMN07E';         
 
-        // Handle Unlock Action
+        // Cache storage for modal popups
+        const calendarEventsCache = {};
+
+        // Unlock Dashboard Handler
         function unlockPortal() {
             const input = document.getElementById('passwordInput');
             const errorMsg = document.getElementById('errorMsg');
@@ -589,20 +592,46 @@
             }
         }
 
-        // Attach Event Listeners Safely
+        // Open & Close Modal Handlers
+        function openEventModal(eventId) {
+            const event = calendarEventsCache[eventId];
+            if (!event) return;
+
+            document.getElementById('modalTitle').textContent = event.title;
+            document.getElementById('modalDate').textContent = event.dateFormatted;
+            document.getElementById('modalBody').innerHTML = event.description || "<em>No description provided for this event.</em>";
+
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.remove('active');
+        }
+
+        // Attach Event Listeners on Page Load
         document.addEventListener('DOMContentLoaded', () => {
             const loginBtn = document.getElementById('loginBtn');
             const passwordInput = document.getElementById('passwordInput');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+            const eventModal = document.getElementById('eventModal');
 
-            if (loginBtn) {
-                loginBtn.addEventListener('click', unlockPortal);
-            }
-
+            if (loginBtn) loginBtn.addEventListener('click', unlockPortal);
             if (passwordInput) {
                 passwordInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') unlockPortal();
                 });
             }
+
+            // Modal Controls
+            if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeEventModal);
+            if (eventModal) {
+                eventModal.addEventListener('click', (e) => {
+                    if (e.target === eventModal) closeEventModal();
+                });
+            }
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeEventModal();
+            });
 
             // Set Current Date Header
             const dateElem = document.getElementById('currentDate');
@@ -615,7 +644,7 @@
             fetchUpcomingEvents();
         });
 
-        // Fetch Live Events from Google Calendar API (with Multi-Day Range Support)
+        // Fetch Live Events from Google Calendar API (with Modal Support)
         async function fetchUpcomingEvents() {
             const container = document.getElementById('gcalEvents');
             if (!container) return;
@@ -638,39 +667,33 @@
                     return;
                 }
 
-                container.innerHTML = data.items.map(event => {
+                container.innerHTML = data.items.map((event, index) => {
                     const isAllDay = !event.start.dateTime;
                     let dateFormatted = "TBD";
 
                     if (isAllDay && event.start.date && event.end.date) {
-                        // All-day event dates (YYYY-MM-DD)
                         const [sY, sM, sD] = event.start.date.split('-');
                         const [eY, eM, eD] = event.end.date.split('-');
 
                         const startDate = new Date(sY, sM - 1, sD);
-                        // Google Calendar sets all-day end dates as non-inclusive (the day after), so subtract 1 day
                         const endDate = new Date(eY, eM - 1, eD - 1);
 
                         const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-                        // Check if multi-day or single day
                         if (startDate.getTime() !== endDate.getTime()) {
                             dateFormatted = `${startStr} - ${endStr}`;
                         } else {
                             const weekdayStr = startDate.toLocaleDateString('en-US', { weekday: 'short' });
                             dateFormatted = `${weekdayStr}, ${startStr}`;
                         }
-
                     } else if (event.start.dateTime) {
-                        // Timed events
                         const startDate = new Date(event.start.dateTime);
                         const endDate = event.end?.dateTime ? new Date(event.end.dateTime) : startDate;
 
                         const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-                        // Check if event spans across midnight into another day
                         if (startDate.toDateString() !== endDate.toDateString()) {
                             dateFormatted = `${startStr} - ${endStr}`;
                         } else {
@@ -679,10 +702,24 @@
                     }
 
                     const title = event.summary || "Untitled Event";
+                    const description = event.description || "";
+                    const eventId = `evt_${index}`;
+
+                    // Cache details for popup
+                    calendarEventsCache[eventId] = {
+                        title: title,
+                        dateFormatted: dateFormatted,
+                        description: description
+                    };
+
+                    const hasDesc = description.trim().length > 0;
+                    const nameHtml = hasDesc 
+                        ? `<span class="event-name has-description" onclick="openEventModal('${eventId}')" title="Click to view details">${title}</span>`
+                        : `<span class="event-name">${title}</span>`;
 
                     return `
                         <li class="event-item">
-                            <span class="event-name">${title}</span>
+                            ${nameHtml}
                             <span class="event-date">${dateFormatted}</span>
                         </li>
                     `;
