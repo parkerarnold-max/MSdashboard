@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Portal | Oakridge Middle School</title>
+    <!-- Modern Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.5;
+            padding-bottom: 3rem;
+        }
+
+        /* Lock Screen Overlay */
+        #lockScreen {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input[type="password"]:focus {
+            border-color: var(--primary);
+        }
+
+        button.btn-login {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button.btn-login:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* Dashboard Container */
+        .dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            opacity: 0.2;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .dashboard.unlocked {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .user-meta {
+            text-align: right;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Announcement Banner */
+        .announcement {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .announcement h3 {
+            color: #1e40af;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .announcement p {
+            color: #1e3a8a;
+            font-size: 0.95rem;
+        }
+
+        /* Grid Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Quick Links Buttons */
+        .link-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .link-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .link-btn:hover {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .link-btn span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Event List */
+        .event-list {
+            list-style: none;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .event-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-date {
+            background: var(--bg-color);
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 640px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .link-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Password Lock Screen -->
+    <div id="lockScreen">
+        <div class="login-card">
+            <h2>Staff Dashboard</h2>
+            <p>Please enter the faculty access code to view school resources.</p>
+            <div class="input-group">
+                <input type="password" id="passwordInput" placeholder="Enter Access Code" autofocus>
+                <button class="btn-login" onclick="checkPassword()">Unlock Dashboard</button>
+            </div>
+            <div id="errorMsg" class="error-msg">Incorrect access code. Try again.</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <header>
+            <div class="brand">
+                <h1>Oakridge Middle School</h1>
+                <p>Faculty & Staff Hub • 2026 Academic Year</p>
+            </div>
+            <div class="user-meta">
+                <p><strong>Vice-Principal's Desk</strong></p>
+                <p id="currentDate"></p>
+            </div>
+        </header>
+
+        <!-- Vice Principal Announcement Banner -->
+        <div class="announcement">
+            <h3>📢 Vice-Principal Notice</h3>
+            <p>Please ensure all Q1 grades are finalized by Friday at 4:00 PM. Lockers check is scheduled for Wednesday afternoon during homeroom.</p>
+        </div>
+
+        <div class="grid-layout">
+            
+            <!-- Quick Links / Notion Hub Card -->
+            <div class="card">
+                <h2>🔗 Essential Links & Notion Pages</h2>
+                <div class="link-grid">
+                    <a href="https://notion.so" target="_blank" class="link-btn">
+                        Student Absences
+                        <span>View planned leave</span>
+                    </a>
+                    <a href="https://notion.so" target="_blank" class="link-btn">
+                        Meeting Minutes
+                        <span>Weekly staff notes</span>
+                    </a>
+                    <a href="https://notion.so" target="_blank" class="link-btn">
+                        Staff Handbook
+                        <span>School policies</span>
+                    </a>
+                    <a href="https://notion.so" target="_blank" class="link-btn">
+                        IT Support Request
+                        <span>Submit tech ticket</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Calendar & Events Card -->
+            <div class="card">
+                <h2>📅 Upcoming Events</h2>
+                <ul class="event-list">
+                    <li class="event-item">
+                        <span>Staff Meeting (Library)</span>
+                        <span class="event-date">Mon, 3:30 PM</span>
+                    </li>
+                    <li class="event-item">
+                        <span>Grade 7 Field Trip</span>
+                        <span class="event-date">Wed, All Day</span>
+                    </li>
+                    <li class="event-item">
+                        <span>Early Release / Professional Day</span>
+                        <span class="event-date">Fri, 12:30 PM</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Quick Files & Forms Card -->
+            <div class="card">
+                <h2>📁 Forms & Downloads</h2>
+                <ul class="event-list">
+                    <li class="event-item">
+                        <span>Field Trip Permission Form (PDF)</span>
+                        <a href="#" style="color:var(--primary); font-size:0.85rem;">Download</a>
+                    </li>
+                    <li class="event-item">
+                        <span>Expense Reimbursement Sheet</span>
+                        <a href="#" style="color:var(--primary); font-size:0.85rem;">Download</a>
+                    </li>
+                    <li class="event-item">
+                        <span>Sub Plans Template</span>
+                        <a href="#" style="color:var(--primary); font-size:0.85rem;">Download</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Set your password here
+        const ACCESS_CODE = "faculty2026";
+
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const lockScreen = document.getElementById('lockScreen');
+            const dashboard = document.getElementById('dashboard');
+
+            if (input === ACCESS_CODE) {
+                lockScreen.style.display = 'none';
+                dashboard.classList.add('unlocked');
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        // Allow pressing "Enter" key to submit password
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Display today's date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+    </script>
+</body>
+</html>
