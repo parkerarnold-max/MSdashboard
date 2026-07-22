@@ -362,6 +362,101 @@
                 grid-template-columns: 1fr;
             }
         }
+        /* Event Description Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--brand-black);
+            padding-right: 1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--brand-maroon);
+        }
+
+        .modal-date {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--brand-maroon);
+            margin-bottom: 1rem;
+            display: inline-block;
+            background: #fee2e2;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+        }
+
+        .modal-body {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Preserves line breaks in descriptions */
+            word-break: break-word;
+        }
+
+        /* Clickable Event Titles */
+        .event-name.has-description {
+            cursor: pointer;
+            color: var(--brand-maroon);
+            text-decoration: underline;
+            text-decoration-color: rgba(153, 0, 0, 0.3);
+            text-underline-offset: 3px;
+            transition: color 0.2s, text-decoration-color 0.2s;
+        }
+
+        .event-name.has-description:hover {
+            color: var(--brand-red-old);
+            text-decoration-color: var(--brand-red-old);
+        }
     </style>
 </head>
 <body>
