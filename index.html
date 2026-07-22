@@ -508,7 +508,7 @@
             fetchUpcomingEvents();
         });
 
-        // Fetch Live Events from Google Calendar API
+        // Fetch Live Events from Google Calendar API (with Multi-Day Range Support)
         async function fetchUpcomingEvents() {
             const container = document.getElementById('gcalEvents');
             if (!container) return;
@@ -535,13 +535,40 @@
                     const isAllDay = !event.start.dateTime;
                     let dateFormatted = "TBD";
 
-                    if (isAllDay && event.start.date) {
-                        const parts = event.start.date.split('-');
-                        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-                        dateFormatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                    if (isAllDay && event.start.date && event.end.date) {
+                        // All-day event dates (YYYY-MM-DD)
+                        const [sY, sM, sD] = event.start.date.split('-');
+                        const [eY, eM, eD] = event.end.date.split('-');
+
+                        const startDate = new Date(sY, sM - 1, sD);
+                        // Google Calendar sets all-day end dates as non-inclusive (the day after), so subtract 1 day
+                        const endDate = new Date(eY, eM - 1, eD - 1);
+
+                        const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                        // Check if multi-day or single day
+                        if (startDate.getTime() !== endDate.getTime()) {
+                            dateFormatted = `${startStr} - ${endStr}`;
+                        } else {
+                            const weekdayStr = startDate.toLocaleDateString('en-US', { weekday: 'short' });
+                            dateFormatted = `${weekdayStr}, ${startStr}`;
+                        }
+
                     } else if (event.start.dateTime) {
-                        const dateObj = new Date(event.start.dateTime);
-                        dateFormatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                        // Timed events
+                        const startDate = new Date(event.start.dateTime);
+                        const endDate = event.end?.dateTime ? new Date(event.end.dateTime) : startDate;
+
+                        const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                        // Check if event spans across midnight into another day
+                        if (startDate.toDateString() !== endDate.toDateString()) {
+                            dateFormatted = `${startStr} - ${endStr}`;
+                        } else {
+                            dateFormatted = startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                        }
                     }
 
                     const title = event.summary || "Untitled Event";
