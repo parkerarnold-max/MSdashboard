@@ -460,7 +460,11 @@
 
     <script>
         // Access Passcode
-        const ACCESS_CODE = "faculty2026";
+        //const ACCESS_CODE = "faculty2026";
+        function checkPassword() {
+           document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('dashboard').classList.add('unlocked');
+        }
 
         // Google Calendar Configuration
         const CALENDAR_ID = 'c_6883b301bc1ad69adb31c9bb57a3cd9c883d2b0920f1ba47cbc4429fb978aa73@group.calendar.google.com
