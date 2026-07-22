@@ -570,8 +570,8 @@
         const ACCESS_CODE = "faculty2026";
 
         // Google Calendar Credentials
-        const CALENDAR_ID = 'c_6883b301bc1ad69adb31c9bb57a3cd9c883d2b0920f1ba47cbc4429fb978aa73@group.calendar.google.com'; 
-        const API_KEY = 'AIzaSyCMOTc1u9L9b_blW9vZkzNXrneKiJMN07E';         
+        const CALENDAR_ID = 'YOUR_GOOGLE_CALENDAR_ID_HERE'; 
+        const API_KEY = 'YOUR_GOOGLE_API_KEY_HERE';         
 
         // Cache storage for modal popups
         const calendarEventsCache = {};
@@ -584,11 +584,25 @@
             const dashboard = document.getElementById('dashboard');
 
             if (input && input.value.trim() === ACCESS_CODE) {
+                // Save unlock state to current browser session
+                sessionStorage.setItem('portalUnlocked', 'true');
+                
                 lockScreen.style.display = 'none';
                 dashboard.classList.add('unlocked');
             } else if (errorMsg) {
                 errorMsg.style.display = 'block';
                 if (input) input.value = '';
+            }
+        }
+
+        // Check if already unlocked during this session on page load
+        function checkExistingSession() {
+            const isUnlocked = sessionStorage.getItem('portalUnlocked');
+            if (isUnlocked === 'true') {
+                const lockScreen = document.getElementById('lockScreen');
+                const dashboard = document.getElementById('dashboard');
+                if (lockScreen) lockScreen.style.display = 'none';
+                if (dashboard) dashboard.classList.add('unlocked');
             }
         }
 
@@ -610,6 +624,9 @@
 
         // Attach Event Listeners on Page Load
         document.addEventListener('DOMContentLoaded', () => {
+            // Check session unlock status first!
+            checkExistingSession();
+
             const loginBtn = document.getElementById('loginBtn');
             const passwordInput = document.getElementById('passwordInput');
             const modalCloseBtn = document.getElementById('modalCloseBtn');
