@@ -327,22 +327,11 @@
                 </div>
             </div>
 
-            <!-- Calendar & Events Card -->
+            <!-- Dynamic Notion Database Card -->
             <div class="card">
                 <h2>📅 Upcoming Events</h2>
-                <ul class="event-list">
-                    <li class="event-item">
-                        <span>Staff Meeting (Library)</span>
-                        <span class="event-date">Mon, 3:30 PM</span>
-                    </li>
-                    <li class="event-item">
-                        <span>Grade 7 Field Trip</span>
-                        <span class="event-date">Wed, All Day</span>
-                    </li>
-                    <li class="event-item">
-                        <span>Early Release / Professional Day</span>
-                        <span class="event-date">Fri, 12:30 PM</span>
-                    </li>
+                <ul class="event-list" id="notionEvents">
+                    <li class="event-item"><span class="event-name">Loading events from Notion...</span></li>
                 </ul>
             </div>
 
@@ -397,6 +386,84 @@
         // Display today's date
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+
+        // Notion Calendar Integration
+        // Your specific Notion integration credentials
+const NOTION_DATABASE_ID = "3efae70541588308b7628182ff250080";
+const NOTION_TOKEN = "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";
+
+async function fetchNotionEvents() {
+    const container = document.getElementById('notionEvents');
+    const today = new Date().toISOString().split('T')[0];
+
+    const url = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
+
+    try {
+        const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${NOTION_TOKEN}`,
+                'Notion-Version': '2022-06-28',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filter: {
+                    property: "Date", // Your Date property
+                    date: {
+                        on_or_after: today
+                    }
+                },
+                sorts: [
+                    {
+                        property: "Date",
+                        direction: "ascending"
+                    }
+                ],
+                page_size: 3 // Limit to top 3 upcoming events
+            })
+        });
+
+        const data = await response.json();
+
+        if (!data.results || data.results.length === 0) {
+            container.innerHTML = '<li class="event-item"><span class="event-name">No upcoming events scheduled.</span></li>';
+            return;
+        }
+
+        container.innerHTML = data.results.map(page => {
+            // Extract title from "Name" property
+            const nameProperty = page.properties["Name"];
+            const title = nameProperty?.title[0]?.plain_text || "Untitled Event";
+
+            // Extract date from "Date" property
+            const dateProperty = page.properties["Date"]?.date?.start;
+            let dateFormatted = "TBD";
+            
+            if (dateProperty) {
+                const eventDate = new Date(dateProperty);
+                dateFormatted = eventDate.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+
+            return `
+                <li class="event-item">
+                    <span class="event-name">${title}</span>
+                    <span class="event-date">${dateFormatted}</span>
+                </li>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('Error fetching Notion calendar:', error);
+        container.innerHTML = '<li class="event-item"><span class="event-name" style="color:var(--brand-red-old);">Unable to load Notion events.</span></li>';
+    }
+}
+
+// Automatically load events when dashboard opens
+fetchNotionEvents();
     </script>
 </body>
 </html>
