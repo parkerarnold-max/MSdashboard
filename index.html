@@ -374,7 +374,7 @@
             <p>Please enter the faculty access code to view the dashboard.</p>
             <div class="input-group">
                 <input type="password" id="passwordInput" placeholder="Enter Access Code" autofocus>
-                <button class="btn-login" onclick="checkPassword()">Unlock Dashboard</button>
+                <button class="btn-login" id="loginBtn">Unlock Dashboard</button>
             </div>
             <div id="errorMsg" class="error-msg">Incorrect access code. Try again.</div>
         </div>
@@ -460,53 +460,71 @@
 
     <script>
         // Access Passcode
-        //const ACCESS_CODE = "faculty2026";
-        function checkPassword() {
-           document.getElementById('lockScreen').style.display = 'none';
-            document.getElementById('dashboard').classList.add('unlocked');
-        }
+        const ACCESS_CODE = "faculty2026";
 
-        // Google Calendar Configuration
-        const CALENDAR_ID = 'c_6883b301bc1ad69adb31c9bb57a3cd9c883d2b0920f1ba47cbc4429fb978aa73@group.calendar.google.com
-'; 
+        // Google Calendar Credentials
+        const CALENDAR_ID = 'c_6883b301bc1ad69adb31c9bb57a3cd9c883d2b0920f1ba47cbc4429fb978aa73@group.calendar.google.com'; 
         const API_KEY = 'AIzaSyCMOTc1u9L9b_blW9vZkzNXrneKiJMN07E';         
 
-        function checkPassword() {
-            const input = document.getElementById('passwordInput').value;
+        // Handle Unlock Action
+        function unlockPortal() {
+            const input = document.getElementById('passwordInput');
             const errorMsg = document.getElementById('errorMsg');
             const lockScreen = document.getElementById('lockScreen');
             const dashboard = document.getElementById('dashboard');
 
-            if (input === ACCESS_CODE) {
+            if (input && input.value.trim() === ACCESS_CODE) {
                 lockScreen.style.display = 'none';
                 dashboard.classList.add('unlocked');
-            } else {
+            } else if (errorMsg) {
                 errorMsg.style.display = 'block';
-                document.getElementById('passwordInput').value = '';
+                if (input) input.value = '';
             }
         }
 
-        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                checkPassword();
-            }
-        });
+        // Attach Event Listeners Safely
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginBtn = document.getElementById('loginBtn');
+            const passwordInput = document.getElementById('passwordInput');
 
-        // Set Current Date Header
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', options);
+            if (loginBtn) {
+                loginBtn.addEventListener('click', unlockPortal);
+            }
+
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') unlockPortal();
+                });
+            }
+
+            // Set Current Date Header
+            const dateElem = document.getElementById('currentDate');
+            if (dateElem) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dateElem.textContent = new Date().toLocaleDateString('en-US', options);
+            }
+
+            // Fetch Calendar Events
+            fetchUpcomingEvents();
+        });
 
         // Fetch Live Events from Google Calendar API
         async function fetchUpcomingEvents() {
             const container = document.getElementById('gcalEvents');
-            const now = new Date().toISOString();
+            if (!container) return;
             
-            // maxResults=250 retrieves all upcoming events chronologically from current time
+            const now = new Date().toISOString();
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CALENDAR_ID)}/events?key=${API_KEY}&timeMin=${now}&singleEvents=true&orderBy=startTime&maxResults=250`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
+
+                if (data.error) {
+                    console.error("Google Calendar API Error:", data.error.message);
+                    container.innerHTML = `<li class="event-item"><span class="event-name" style="color:var(--brand-red-old);">${data.error.message}</span></li>`;
+                    return;
+                }
 
                 if (!data.items || data.items.length === 0) {
                     container.innerHTML = '<li class="event-item"><span class="event-name">No upcoming events scheduled.</span></li>';
@@ -517,13 +535,11 @@
                     const isAllDay = !event.start.dateTime;
                     let dateFormatted = "TBD";
 
-                    if (isAllDay) {
-                        // Safe parsing for All-Day Events ("YYYY-MM-DD")
-                        const [year, month, day] = event.start.date.split('-');
-                        const dateObj = new Date(year, month - 1, day);
+                    if (isAllDay && event.start.date) {
+                        const parts = event.start.date.split('-');
+                        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
                         dateFormatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                    } else {
-                        // Safe parsing for Timed Events
+                    } else if (event.start.dateTime) {
                         const dateObj = new Date(event.start.dateTime);
                         dateFormatted = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
                     }
@@ -543,9 +559,8 @@
                 container.innerHTML = '<li class="event-item"><span class="event-name" style="color:var(--brand-red-old);">Unable to load calendar events.</span></li>';
             }
         }
-
-        // Initialize Google Calendar Fetch on Load
-        fetchUpcomingEvents();
     </script>
+</body>
+</html>
 </body>
 </html>
