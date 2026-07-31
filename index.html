@@ -246,6 +246,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1.5rem;
+			align-items: stretch;
         }
 
         .card {
@@ -256,6 +257,7 @@
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
+			height: 100%
         }
 
         .card h2 {
@@ -309,7 +311,9 @@
 
         /* Scrollable Calendar List */
         .scrollable-event-container {
-            max-height: 260px;
+            flex: 1;
+			min-height: 0;
+			max-height: 340px;
             overflow-y: auto;
             padding-right: 0.5rem;
         }
@@ -576,8 +580,7 @@
                         <span>Weekly staff notes</span>
                     </a>
                     <a href="https://docs.google.com/spreadsheets/d/1VrDEq9m_g9n166e05CKpmR-nzHhxq5YAiQyKCZ1Ume8/edit?gid=1846241909#gid=1846241909" target="_blank" class="link-btn">
-                        Master Schedules
-                        <span></span>
+                        <span>Master Schedules</span>
                     </a> 
                     <a href="https://parkerarnold.notion.site/MS-Planned-Absences-3a6ae705415880849b0dfadd7f33e4b9?source=copy_link" target="_blank" class="link-btn">
                         Student Absences
@@ -589,11 +592,11 @@
                         Daily Attendance
                         <span>Updated by the office</span>
                     </a>
-		<a href="https://docs.google.com/document/d/1k2bw0POaiAwGrD3QTWOXPU9or4OjDbpKd2J-H3a90jU/edit?tab=t.0" target="_blank" class="link-btn">
+					<a href="https://docs.google.com/document/d/1k2bw0POaiAwGrD3QTWOXPU9or4OjDbpKd2J-H3a90jU/edit?tab=t.0" target="_blank" class="link-btn">
                         MS Handbook
                         <span>Policies and Procedures</span>
                     </a>
-			</a>
+			
 		<a href="https://sites.google.com/mca.org.tw/mak-staff-links/home" target="_blank" class="link-btn">
                         MAK Staff Links
                         <span>Everything else</span>
