@@ -671,8 +671,7 @@
 
             if (input && input.value.trim() === ACCESS_CODE) {
                 // Save unlock state to current browser session
-                sessionStorage.setItem('portalUnlocked', 'true');
-                
+				localStorage.setItem('portalUnlockedTime', Date.now().toString());                
                 lockScreen.style.display = 'none';
                 dashboard.classList.add('unlocked');
             } else if (errorMsg) {
@@ -681,16 +680,27 @@
             }
         }
 
-        // Check if already unlocked during this session on page load
-        function checkExistingSession() {
-            const isUnlocked = sessionStorage.getItem('portalUnlocked');
-            if (isUnlocked === 'true') {
-                const lockScreen = document.getElementById('lockScreen');
-                const dashboard = document.getElementById('dashboard');
-                if (lockScreen) lockScreen.style.display = 'none';
-                if (dashboard) dashboard.classList.add('unlocked');
-            }
+        // Updated Session Check with 24-Hour Expiration
+	function checkExistingSession() {
+    const savedTime = localStorage.getItem('portalUnlockedTime');
+    
+    if (savedTime) {
+        const currentTime = Date.now();
+        const twentyFourHoursMs = 24 * 60 * 60 * 1000;
+
+        // Check if less than 24 hours (86,400,000 ms) have passed
+        if (currentTime - parseInt(savedTime, 10) < twentyFourHoursMs) {
+            const lockScreen = document.getElementById('lockScreen');
+            const dashboard = document.getElementById('dashboard');
+            if (lockScreen) lockScreen.style.display = 'none';
+            if (dashboard) dashboard.classList.add('unlocked');
+            return;
+        } else {
+            // Expired: Clear storage so they must re-enter password
+            localStorage.removeItem('portalUnlockedTime');
         }
+    }
+}
 
         // Open & Close Modal Handlers
         function openEventModal(eventId) {
