@@ -260,7 +260,7 @@
             flex-direction: column;
 			height: 100%
 			min-height: 0; /* Prevents card from expanding infinitely */
-            overflow: hidden; /* Clamps scrollable area inside card bounds */
+            /*overflow: hidden; Clamps scrollable area inside card bounds */
         }
 
         .card h2 {
@@ -314,9 +314,9 @@
 
         /* Scrollable Calendar List */
         .scrollable-event-container {
-            flex: 1;
+            flex: 1 1 0px;
 			min-height: 0;
-			max-height: 1000px;
+			/*max-height: 1000px;*/
 			/*height: 0;*/
             overflow-y: auto;
             padding-right: 0.5rem;
